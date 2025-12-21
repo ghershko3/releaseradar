@@ -2,7 +2,7 @@
 
 > Query GitHub releases from your terminal. Fast, simple, powerful.
 
-Stop clicking through GitHub's UI. Compare versions, search releases, and track changes—all from the command line.
+Stop clicking through GitHub's UI. Compare versions, search releases, and track changes - all from the command line.
 
 ## Quick Start
 
