@@ -1,306 +1,123 @@
-# releaseradar 🚀
+# releaseradar
 
-> Stop clicking through GitHub releases. Search, filter, and compare them from your terminal.
+> Query GitHub releases from your terminal. Fast, simple, powerful.
 
-Ever needed to answer "What changed between version X and Y?" or "Who actually made this release?" Now you can—from your terminal, in seconds.
+Stop clicking through GitHub's UI. Compare versions, search releases, and track changes—all from the command line.
 
-## Why releaseradar?
+## Quick Start
 
-**The Problem:** GitHub's web UI is great for browsing, but terrible for:
-
-- Finding what changed since a specific version
-- Searching across all your releases
-- Seeing who _actually_ made changes (vs. CI bot names)
-- Working with multi-service monorepos
-
-**The Solution:** A blazingly fast CLI that treats your releases like queryable data.
-
-```bash
-$ rr releases app-25.12.100
-
-Releases since app-25.12.100 (prefix: app-):
-
-TAG                 DATE             AUTHOR      CHANGES
-────────────────────────────────────────────────────────────────────
-app-25.12.107       2025-12-18 14:13  johndoe    SP-62488 - fix upload
-app-25.12.106       2025-12-18 13:42  janedoe    SP-63252 Remove dot
-app-25.12.105       2025-12-18 13:10  bobsmith   [SP-62629]: add spans
-
-Total: 7 release(s)
-```
-
-## Get Started in 60 Seconds ⚡
-
-### 1. Install
+**Install**
 
 ```bash
 npm i -g @ghershko/releaseradar
 ```
 
-### 2. Setup GitHub CLI (if needed)
+**Setup** (if not already installed)
 
 ```bash
-brew install gh        # macOS
-gh auth login         # authenticate once
+brew install gh && gh auth login
 ```
 
-### 3. Configure (one-time setup)
-
-Add to your `~/.zshrc` or `~/.bashrc`:
+**Configure** (add to `~/.zshrc` or `~/.bashrc`)
 
 ```bash
 export RR_ORG=myorg
 export RR_REPO=myrepo
 ```
 
-Then reload your shell:
+**Use**
 
 ```bash
-source ~/.zshrc  # or ~/.bashrc
+rr list                    # view all releases
+rr releases v2.1.0         # compare since version
+rr search "fix"            # search releases
+rr info v2.1.5             # release details
 ```
 
-### 4. Start using!
+## Commands
 
 ```bash
-rr list              # see all releases
-rr releases v2.1.0   # compare since version
+rr releases <tag>          # Show releases since a specific tag
+rr list [prefix]           # List all releases (optional: filter by prefix)
+rr search <term>           # Search release notes
+rr info <tag>              # Get detailed release info
 ```
 
-That's it! You're ready to query releases.
-
-## What You Can Do
-
-### 📊 Compare Versions
-
-See everything that changed since a specific release:
-
-```bash
-rr releases v2.1.0
-```
-
-### 🔍 Search Releases
-
-Find releases mentioning specific features or bugs:
-
-```bash
-rr search "authentication fix"
-```
-
-### 📋 List & Filter
-
-View all releases, optionally filtered by service prefix:
-
-```bash
-rr list              # all releases
-rr list api          # only api-* releases
-```
-
-### 📝 Get Details
-
-Full info about any release:
-
-```bash
-rr info v2.1.5
-```
-
-## Power Features
-
-### 🎯 Multi-Service Monorepo Support
-
-Works great with tagged services (`app-`, `api-`, `worker-`):
-
-```bash
-rr list api          # only API releases
-rr releases api-1.0.0  # API changes since 1.0.0
-```
-
-### 👤 Real Author Detection
-
-Automatically finds the actual developer behind CI/CD releases:
-
-```bash
-Release created by github-actions-bot
-↓
-Author: johndoe       # extracted from commit/PR
-```
-
-### 🔄 Multi-Repo Friendly
-
-Switch between repos instantly with flags:
-
-```bash
-rr --org myorg --repo backend releases v1.0
-rr --org myorg --repo frontend list
-```
-
-Flags always override environment variables.
-
-## Command Reference
-
-| Command             | Description             | Example               |
-| ------------------- | ----------------------- | --------------------- |
-| `rr releases <tag>` | Show releases since tag | `rr releases v1.0.0`  |
-| `rr info <tag>`     | Get release details     | `rr info v2.1.5`      |
-| `rr search <term>`  | Search all releases     | `rr search "bug fix"` |
-| `rr list [prefix]`  | List releases           | `rr list api`         |
-
-### Flags
+**Flags**
 
 - `--org <name>` - Override GitHub organization
 - `--repo <name>` - Override repository name
 
-## Real-World Examples
+## Features
 
-### Scenario 1: "What's new since production?"
+**Version Comparison**
 
 ```bash
-$ rr releases api-2.1.0
+$ rr releases v2.1.0
 
-TAG                 DATE             AUTHOR      CHANGES
-────────────────────────────────────────────────────────────────────
-api-2.1.5           2025-12-20 09:23  alice      Rate limiting fix
-api-2.1.4           2025-12-19 16:42  bob        Auth token refresh
-api-2.1.3           2025-12-19 14:15  charlie    DB connection pool
-api-2.1.2           2025-12-18 11:30  alice      Logging improvements
-api-2.1.1           2025-12-18 09:00  bob        Cache invalidation
+TAG          DATE             AUTHOR    CHANGES
+──────────────────────────────────────────────────
+v2.1.5       2025-12-20 09:23  alice    Rate limiting fix
+v2.1.4       2025-12-19 16:42  bob      Auth token refresh
+v2.1.3       2025-12-19 14:15  charlie  DB connection pool
 
-Total: 5 release(s)
+Total: 3 release(s)
 ```
 
-### Scenario 2: "Find that security patch"
+**Monorepo Support** - Filter by service prefix
 
 ```bash
-$ rr search "CVE"
-
-TAG                 DATE             AUTHOR      CHANGES
-────────────────────────────────────────────────────────────────────
-app-2.3.1           2025-11-15 13:22  security   CVE-2024-1234 patch
-api-2.0.8           2025-10-03 10:15  security   CVE-2024-5678 fix
-
-Total: 2 match(es)
+rr list api                # only api-* releases
+rr releases api-1.0.0      # compare API versions
 ```
 
-### Scenario 3: "Full release details"
+**Real Author Detection** - Shows actual developers, not CI bots
+
+**Multi-Repo** - Switch repos with flags
 
 ```bash
-$ rr info api-2.1.5
-
-────────────────────────────────────────────────────────
-Tag:       api-2.1.5
-Published: 2025-12-20 09:23:15
-Author:    alice
-URL:       github.com/myorg/myrepo/releases/tag/api-2.1.5
-
-Release Notes:
-## What's Changed
-* Fix rate limiting edge case causing 429 errors
-* Update dependencies to latest security patches
-* Add retry logic for transient failures
-
-**Full Changelog**: v2.1.4...v2.1.5
-────────────────────────────────────────────────────────
+rr --org myorg --repo backend list
 ```
 
 ## Configuration
 
-Two ways to configure ReleaseRadar:
-
-### Option 1: Environment Variables (Recommended)
-
-Set once in your shell profile (`~/.zshrc` or `~/.bashrc`):
+**Environment Variables** (recommended)
 
 ```bash
 export RR_ORG=myorg
 export RR_REPO=myrepo
-export RR_LIMIT=500      # optional, defaults to 300
+export RR_LIMIT=500        # optional, default: 300
 ```
 
-Reload your shell:
+**Command Flags** (override env vars)
 
 ```bash
-source ~/.zshrc  # or ~/.bashrc
-```
-
-Now all commands work without flags:
-
-```bash
-rr list
-rr releases v1.0.0
-```
-
-### Option 2: Command-Line Flags
-
-No setup needed, just add flags to each command:
-
-```bash
-rr --org company --repo backend list
-rr --org company --repo frontend releases v2.0
-```
-
-### Mixing Both
-
-Flags override environment variables, perfect for switching repos:
-
-```bash
-rr list                              # uses RR_ORG/RR_REPO from env
-rr --org other --repo other list     # overrides for this command
-```
-
-## Under the Hood
-
-- **Lightning Fast**: Uses GitHub CLI (`gh`) for authenticated API access
-- **Smart Parsing**: Automatically extracts service prefixes and groups releases
-- **Author Intelligence**: Digs through commits to find real authors (not just bot names)
-- **Beautiful Output**: Colored terminal output with spinners and icons
-- **Zero Config**: Works out of the box with flags, or set env vars once
-
-## Use Cases
-
-✅ **Release Management** - Compare versions before deployment  
-✅ **Change Tracking** - See what's in the current sprint  
-✅ **Security Audits** - Search for CVE fixes across all releases  
-✅ **Monorepo Teams** - Filter by service/component prefix  
-✅ **DevOps** - Integrate into CI/CD pipelines  
-✅ **Documentation** - Generate changelogs automatically
-
-## Contributing
-
-Built something cool with releaseradar? Found a bug? PRs welcome!
-
-```bash
-git clone https://github.com/ghershko3/releaseradar.git
-cd releaseradar
-npm install
-node tests/run-all.js  # run tests
+rr --org company --repo backend releases v1.0
 ```
 
 ## Troubleshooting
 
-**Command not found: rr**
+**Command not found**
 
 ```bash
 npm i -g @ghershko/releaseradar
 ```
 
-**GitHub CLI not installed**
+**GitHub CLI missing**
 
 ```bash
-brew install gh
-gh auth login
+brew install gh && gh auth login
 ```
 
-**No releases showing up**
+**No releases showing**
 
-- Check your org/repo: `rr --org myorg --repo myrepo list`
+- Verify: `rr --org myorg --repo myrepo list`
 - Increase limit: `export RR_LIMIT=500`
-- Verify the repository has releases
 
 ## License
 
-MIT - Use it anywhere, modify it however you want.
+MIT
 
 ---
 
-**Made with ❤️ for developers tired of clicking through GitHub's UI**
-
-[Report Bug](https://github.com/ghershko3/releaseradar/issues) · [Request Feature](https://github.com/ghershko3/releaseradar/issues) · [Documentation](https://github.com/ghershko3/releaseradar)
+[Report Bug](https://github.com/ghershko3/releaseradar/issues) · [Request Feature](https://github.com/ghershko3/releaseradar/issues)
