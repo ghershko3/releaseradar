@@ -28,10 +28,10 @@ export RR_REPO=myrepo
 **Use**
 
 ```bash
-rr list                    # view all releases
-rr releases v2.1.0         # compare since version
-rr search "fix"            # search releases
-rr info v2.1.5             # release details
+rr list                    # View all releases
+rr releases v2.1.0         # Compare since version
+rr search "fix"            # Search releases
+rr info v2.1.5             # Release details
 ```
 
 ## Commands
