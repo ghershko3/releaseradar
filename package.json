@@ -1,0 +1,35 @@
+{
+  "name": "@ghershko3/releaseradar",
+  "version": "1.0.0",
+  "description": "Lightning-fast CLI to query and compare GitHub releases from your terminal",
+  "main": "index.js",
+  "type": "module",
+  "bin": {
+    "rr": "./index.js",
+    "gvm": "./index.js"
+  },
+  "preferGlobal": true,
+  "scripts": {
+    "start": "node index.js"
+  },
+  "keywords": ["github", "releases", "version", "management", "cli", "git", "changelog", "semver", "radar"],
+  "author": "Guy Hershko <ghershko3@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ghershko3/releaseradar.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ghershko3/releaseradar/issues"
+  },
+  "homepage": "https://github.com/ghershko3/releaseradar#readme",
+  "files": [
+    "index.js",
+    "src/",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}
+
