@@ -1,3 +1,4 @@
+import chalk from 'chalk';
 import { formatIsoDate } from '../utils/date-utils.js';
 import { extractFirstChangeFromNotes, truncateText, padText } from '../utils/string-utils.js';
 import { createSeparator } from './table.js';
@@ -6,33 +7,48 @@ import { TABLE_WIDTHS } from '../utils/constants.js';
 export const formatReleaseDetailed = (release) => {
   if (!release?.tag) return;
   
-  const separator = createSeparator(TABLE_WIDTHS.SEPARATOR_STANDARD);
+  const maxWidth = 80;
+  const border = '═'.repeat(maxWidth);
+  const light = '─'.repeat(maxWidth);
   
-  console.log(separator);
-  console.log(`Tag:       ${release.tag}`);
-  console.log(`Name:      ${release.name}`);
-  console.log(`Repo:      ${release.repo}`);
-  console.log(`Published: ${formatIsoDate(release.published)}`);
-  console.log(`Author:    ${release.author}`);
-  console.log(`URL:       ${release.url}`);
+  console.log(chalk.dim(border));
+  console.log(chalk.cyan.bold(`  ${release.tag}`));
+  console.log(chalk.dim(light));
+  
+  const formatRow = (label, value, dimValue = false) => {
+    const padding = ' '.repeat(2);
+    const labelFormatted = chalk.dim(label.padEnd(12));
+    const valueFormatted = dimValue ? chalk.dim(value) : value;
+    console.log(`${padding}${labelFormatted}${valueFormatted}`);
+  };
+  
+  formatRow('Published:', formatIsoDate(release.published), true);
+  formatRow('Author:', release.author);
+  formatRow('Repository:', release.repo, true);
   
   if (release.commitSha) {
-    console.log(`Commit:    ${release.commitSha}`);
+    formatRow('Commit:', release.commitSha.substring(0, 12), true);
   }
   
-  if (release.releaseNotes) {
-    console.log(`\nRelease Notes:\n${release.releaseNotes}`);
+  formatRow('URL:', release.url, true);
+  
+  if (release.releaseNotes && release.releaseNotes.trim()) {
+    console.log(chalk.dim(light));
+    console.log(chalk.dim('  Release Notes:'));
+    console.log();
+    const notes = release.releaseNotes.split('\n').map(line => `  ${line}`).join('\n');
+    console.log(notes);
   }
   
-  console.log(separator);
+  console.log(chalk.dim(border));
 };
 
 export const formatReleaseCompact = (release, options = {}) => {
   if (!release?.tag) return;
   
   const { showChanges = false } = options;
-  const tag = padText(release.tag, TABLE_WIDTHS.TAG);
-  const date = padText(formatIsoDate(release.published).substring(0, 16), TABLE_WIDTHS.DATE);
+  const tag = chalk.cyan(padText(release.tag, TABLE_WIDTHS.TAG));
+  const date = chalk.dim(padText(formatIsoDate(release.published).substring(0, 16), TABLE_WIDTHS.DATE));
   const author = padText(release.author, TABLE_WIDTHS.AUTHOR);
   
   if (showChanges) {
@@ -42,7 +58,7 @@ export const formatReleaseCompact = (release, options = {}) => {
     console.log(`${tag} ${date} ${author} ${changesPadded}`);
   } else {
     const repo = padText(release.repo, TABLE_WIDTHS.REPO);
-    console.log(`${tag.substring(0, 25).padEnd(25)} ${repo} ${date} ${author}`);
+    console.log(`${tag} ${repo} ${date} ${author}`);
   }
 };
 

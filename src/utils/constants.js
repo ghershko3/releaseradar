@@ -2,6 +2,12 @@ export const DEFAULT_RELEASE_LIMIT = 300;
 export const RELEASES_PER_PAGE = 100;
 export const MAX_BUFFER_SIZE = 10 * 1024 * 1024;
 
+export const ENV_VAR_KEYS = {
+  ORG: 'RR_ORG',
+  REPO: 'RR_REPO',
+  LIMIT: 'RR_LIMIT'
+};
+
 export const TABLE_WIDTHS = {
   TAG: 30,
   REPO: 20,

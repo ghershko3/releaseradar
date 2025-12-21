@@ -1,12 +1,9 @@
+import chalk from 'chalk';
 import { fetchAndProcessReleases, extractVersionPrefix } from '../services/releases.js';
 import { formatRelease } from '../presentation/formatter.js';
 import { printTable, createReleasesTableHeader } from '../presentation/table.js';
 import { requireParameter, ValidationError, validateConfig } from '../utils/validation.js';
 import { isNewerThan } from '../utils/date-utils.js';
-import { createInterface } from 'readline';
-import { writeFileSync, mkdirSync, existsSync } from 'fs';
-import { join } from 'path';
-import { homedir } from 'os';
 
 const findReleaseByVersion = (releases, version) => {
   return releases.find(release => release.tag === version);
@@ -46,29 +43,29 @@ export const commandReleases = (sinceVersion, config) => {
   const targetRelease = findReleaseByVersion(releasesWithPrefix, sinceVersion);
   
   if (!targetRelease) {
-    console.log(`Version ${sinceVersion} not found. Showing all releases with prefix "${prefix}":\n`);
-    const tableConfig = createReleasesTableHeader(true);
+    console.log(chalk.yellow(`\nVersion ${sinceVersion} not found.`) + ` Showing all releases with prefix "${prefix}":\n`);
+    const tableConfig = createReleasesTableHeader();
     printTable(tableConfig);
     releasesWithPrefix.forEach(release => 
       formatRelease(release, { showChanges: true })
     );
-    console.log(`\nTotal: ${releasesWithPrefix.length} release(s)`);
+    console.log(chalk.dim(`\nTotal: ${releasesWithPrefix.length} release(s)`));
     return;
   }
   
   const newerReleases = filterReleasesNewerThan(releasesWithPrefix, targetRelease);
   
-  console.log(`Releases since ${sinceVersion} (prefix: ${prefix}):\n`);
-  const tableConfig = createReleasesTableHeader(true);
+  console.log(`\nReleases since ${chalk.cyan(sinceVersion)} ${chalk.dim(`(prefix: ${prefix}):`)}\\n`);
+  const tableConfig = createReleasesTableHeader();
   printTable(tableConfig);
   
   if (newerReleases.length === 0) {
-    console.log('No newer releases found.');
+    console.log(chalk.dim('No newer releases found.'));
   } else {
     newerReleases.forEach(release => 
       formatRelease(release, { showChanges: true })
     );
-    console.log(`\nTotal: ${newerReleases.length} release(s)`);
+    console.log(chalk.dim(`\nTotal: ${newerReleases.length} release(s)`));
   }
 };
 
@@ -93,21 +90,21 @@ export const commandSearch = (query, config) => {
     matchesSearchQuery(release, query)
   );
   
-  console.log(`Search results for "${query}":\n`);
-  const tableConfig = createReleasesTableHeader(true);
+  console.log(`\nSearch results for "${query}":\n`);
+  const tableConfig = createReleasesTableHeader();
   printTable(tableConfig);
   
   if (matchingReleases.length === 0) {
-    console.log('No matches found.');
+    console.log(chalk.dim('No matches found.'));
   } else {
     matchingReleases.forEach(release => 
       formatRelease(release, { showChanges: true })
     );
-    console.log(`\nTotal: ${matchingReleases.length} match(es)`);
+    console.log(chalk.dim(`\nTotal: ${matchingReleases.length} match(es)`));
   }
 };
 
-export const commandList = (prefix, config, options = {}) => {
+export const commandList = (prefix, config) => {
   const releases = fetchAndProcessReleases(config);
   
   const filteredReleases = prefix 
@@ -115,112 +112,71 @@ export const commandList = (prefix, config, options = {}) => {
     : releases;
   
   const title = prefix 
-    ? `Releases with prefix "${prefix}":`
-    : 'All releases:';
+    ? `\nReleases with prefix "${prefix}":`
+    : '\nAll releases:';
   
   console.log(`${title}\n`);
   
-  const { showChanges = false } = options;
-  const tableConfig = createReleasesTableHeader(showChanges);
+  const tableConfig = createReleasesTableHeader();
   printTable(tableConfig);
   
   filteredReleases.forEach(release => 
-    formatRelease(release, { showChanges })
+    formatRelease(release, { showChanges: true })
   );
   
-  console.log(`\nTotal: ${filteredReleases.length} release(s)`);
+  console.log(chalk.dim(`\nTotal: ${filteredReleases.length} release(s)`));
 };
 
-const promptUser = (question) => {
-  const rl = createInterface({
-    input: process.stdin,
-    output: process.stdout
-  });
-
-  return new Promise((resolve) => {
-    rl.question(question, (answer) => {
-      rl.close();
-      resolve(answer.trim());
-    });
-  });
-};
-
-export const commandInit = async () => {
-  console.log('\n🔧 ReleaseRadar - Configuration Setup\n');
-  console.log('This will save default config to ~/.releaseradar/config.json');
-  console.log('(Optional - you can also use --org and --repo flags instead)\n');
-  
-  const org = await promptUser('GitHub organization name: ');
-  const repo = await promptUser('GitHub repository name: ');
-  const releaseLimitInput = await promptUser('Release limit (default: 300): ');
-  
-  const releaseLimit = releaseLimitInput ? parseInt(releaseLimitInput, 10) : 300;
-  
-  const config = {
-    org: org || 'myorg',
-    repo: repo || 'myrepo',
-    releaseLimit: isNaN(releaseLimit) ? 300 : releaseLimit
-  };
-  
-  try {
-    validateConfig(config);
-  } catch (error) {
-    console.error(`\n❌ Invalid configuration: ${error.message}\n`);
-    process.exit(1);
-  }
-  
-  const configDir = join(homedir(), '.releaseradar');
-  const configPath = join(configDir, 'config.json');
-  
-  if (!existsSync(configDir)) {
-    mkdirSync(configDir, { recursive: true });
-  }
-  
-  writeFileSync(configPath, JSON.stringify(config, null, 2));
-  
-  console.log(`\n✅ Configuration saved to ${configPath}`);
-  console.log('\nYou can now use gvm without flags:');
-  console.log('  gvm list');
-  console.log('  gvm releases <version>');
-  console.log('\nOr override with flags anytime:');
-  console.log('  gvm --org otherorg --repo otherrepo list\n');
-};
-
-export const showHelp = (config) => {
-  const configInfo = config 
-    ? `Stored config: ${config.org}/${config.repo} (limit: ${config.releaseLimit})`
-    : 'No stored config (optional - use flags or run "gvm init")';
-  
+export const showHelp = () => {
   console.log(`
-GitHub Version Management Tool (gvm)
+ReleaseRadar (rr) 🚀
 
-Usage:
-  gvm init               Set up default configuration (optional)
-  gvm releases <version>  Show releases since a specific version (same prefix)
-  gvm info <version>      Show detailed info about a specific release
-  gvm search <query>      Search across all releases
-  gvm list [prefix]       List all releases, optionally filtered by prefix
-  gvm help               Show this help message
+QUICK START:
+  # Set once in ~/.zshrc or ~/.bashrc
+  export RR_ORG=myorg RR_REPO=myrepo
+  
+  # Start using immediately!
+  rr list
 
-Config Flags (override stored config or use without init):
-  --org <name>           GitHub organization name
-  --repo <name>          GitHub repository name
-  --limit <number>       Max releases to fetch (default: 300)
+COMMANDS:
+  rr releases <tag>     Compare: What's new since this version?
+                        Example: rr releases app-25.12.100
 
-Display Flags:
-  --changes              Show what's changed in list view
+  rr search "<query>"   Search: Find releases by keyword
+                        Example: rr search "authentication fix"
 
-Examples:
-  gvm init
-  gvm list
-  gvm --org myorg --repo backend list
-  gvm --org myorg --repo api releases app-1.0.0
-  gvm releases app-25.12.105
-  gvm info app-25.12.107
-  gvm search "bug fix"
-  gvm list app --changes
+  rr list [prefix]      Browse: All releases (optionally filtered)
+                        Example: rr list api
 
-Configuration:
-  ${configInfo}
+  rr info <tag>         Details: Full info about a release
+                        Example: rr info app-25.12.107
+
+CONFIGURATION:
+  Environment Variables (recommended):
+    RR_ORG=myorg       Your GitHub organization
+    RR_REPO=myrepo     Your repository name
+    RR_LIMIT=500       Max releases to fetch (default: 300)
+
+  Override with flags:
+    --org <name>       One-time org override
+    --repo <name>      One-time repo override
+
+EXAMPLES:
+  # Setup once
+  echo 'export RR_ORG=acme RR_REPO=backend' >> ~/.zshrc
+
+  # Find what changed since production
+  rr releases api-2.1.0
+
+  # Search for security patches
+  rr search "CVE"
+
+  # Check a specific release
+  rr info api-2.1.5
+
+  # Override for different repo
+  rr --org acme --repo frontend list
+
+Need help? Visit: https://github.com/ghershko3/releaseradar
 `);
 };

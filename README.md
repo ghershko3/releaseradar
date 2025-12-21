@@ -44,19 +44,26 @@ brew install gh        # macOS
 gh auth login         # authenticate once
 ```
 
-### 3. Run your first command
+### 3. Configure (one-time setup)
 
-**Option A: Quick start with flags**
+Add to your `~/.zshrc` or `~/.bashrc`:
 
 ```bash
-rr --org myorg --repo myrepo list
+export RR_ORG=myorg
+export RR_REPO=myrepo
 ```
 
-**Option B: Save defaults (one-time setup)**
+Then reload your shell:
 
 ```bash
-rr init              # saves your default org/repo
-rr list              # now just works!
+source ~/.zshrc  # or ~/.bashrc
+```
+
+### 4. Start using!
+
+```bash
+rr list              # see all releases
+rr releases v2.1.0   # compare since version
 ```
 
 That's it! You're ready to query releases.
@@ -126,6 +133,8 @@ rr --org myorg --repo backend releases v1.0
 rr --org myorg --repo frontend list
 ```
 
+Flags always override environment variables.
+
 ## Command Reference
 
 | Command             | Description             | Example               |
@@ -134,14 +143,11 @@ rr --org myorg --repo frontend list
 | `rr info <tag>`     | Get release details     | `rr info v2.1.5`      |
 | `rr search <term>`  | Search all releases     | `rr search "bug fix"` |
 | `rr list [prefix]`  | List releases           | `rr list api`         |
-| `rr init`           | Save default config     | `rr init`             |
 
 ### Flags
 
 - `--org <name>` - Override GitHub organization
 - `--repo <name>` - Override repository name
-- `--limit <num>` - Max releases to fetch (default: 300)
-- `--changes` - Show what changed in list view
 
 ## Real-World Examples
 
@@ -197,17 +203,22 @@ Release Notes:
 
 ## Configuration
 
-Two ways to configure gvm:
+Two ways to configure ReleaseRadar:
 
-### Option 1: Save Defaults (Recommended for single repo)
+### Option 1: Environment Variables (Recommended)
+
+Set once in your shell profile (`~/.zshrc` or `~/.bashrc`):
 
 ```bash
-$ rr init
-? Organization: myorg
-? Repository: myrepo
-? Release limit (default 300): 300
+export RR_ORG=myorg
+export RR_REPO=myrepo
+export RR_LIMIT=500      # optional, defaults to 300
+```
 
-✓ Config saved to ~/.releaseradar/config.json
+Reload your shell:
+
+```bash
+source ~/.zshrc  # or ~/.bashrc
 ```
 
 Now all commands work without flags:
@@ -217,19 +228,21 @@ rr list
 rr releases v1.0.0
 ```
 
-### Option 2: Use Flags (Great for multiple repos)
+### Option 2: Command-Line Flags
 
-No setup needed, just add flags:
+No setup needed, just add flags to each command:
 
 ```bash
 rr --org company --repo backend list
 rr --org company --repo frontend releases v2.0
 ```
 
-Mix and match:
+### Mixing Both
+
+Flags override environment variables, perfect for switching repos:
 
 ```bash
-rr list                              # uses saved config
+rr list                              # uses RR_ORG/RR_REPO from env
 rr --org other --repo other list     # overrides for this command
 ```
 
@@ -238,7 +251,8 @@ rr --org other --repo other list     # overrides for this command
 - **Lightning Fast**: Uses GitHub CLI (`gh`) for authenticated API access
 - **Smart Parsing**: Automatically extracts service prefixes and groups releases
 - **Author Intelligence**: Digs through commits to find real authors (not just bot names)
-- **Zero Config**: Works out of the box with flags, or save defaults for convenience
+- **Beautiful Output**: Colored terminal output with spinners and icons
+- **Zero Config**: Works out of the box with flags, or set env vars once
 
 ## Use Cases
 
@@ -277,8 +291,9 @@ gh auth login
 
 **No releases showing up**
 
-- Check your org/repo names: `rr --org myorg --repo myrepo list`
-- Increase limit: `rr --limit 500 list`
+- Check your org/repo: `rr --org myorg --repo myrepo list`
+- Increase limit: `export RR_LIMIT=500`
+- Verify the repository has releases
 
 ## License
 

@@ -165,11 +165,11 @@ Most functions in `utils/` and parts of `services/` are pure:
 
 Custom error classes in `utils/validation.js`:
 
-- `GvmError` - Base error class
+- `RrError` - Base error class
 - `ValidationError` - Input/config validation errors
 - `GitHubApiError` - API communication errors
 
-Errors bubble up to `gvm.js` for centralized handling.
+Errors bubble up to `index.js` for centralized handling.
 
 ### 5. Modern JavaScript Patterns
 
@@ -234,7 +234,7 @@ Tests are organized by functionality:
 ### Adding a New Command
 
 1. Add handler to `commands/index.js`
-2. Register in `COMMAND_HANDLERS` in `gvm.js`
+2. Register in `COMMAND_HANDLERS` in `index.js`
 3. Add to help text in `showHelp()`
 4. Update main README
 

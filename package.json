@@ -5,8 +5,7 @@
   "main": "index.js",
   "type": "module",
   "bin": {
-    "rr": "./index.js",
-    "gvm": "./index.js"
+    "rr": "./index.js"
   },
   "preferGlobal": true,
   "scripts": {
@@ -40,5 +39,8 @@
   ],
   "engines": {
     "node": ">=14.0.0"
+  },
+  "dependencies": {
+    "chalk": "^5.6.2"
   }
 }

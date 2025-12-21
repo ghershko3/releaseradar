@@ -48,15 +48,11 @@ export const fetchAndProcessReleases = (config) => {
   const rawReleases = fetchReleasesFromGitHub(org, repo, releaseLimit);
   validateReleases(rawReleases);
   
-  console.log('Processing releases...');
-  
   const processedReleases = rawReleases
     .filter(release => release?.tag_name)
     .map(release => transformReleaseData(release, repo));
   
   const sortedReleases = sortReleasesByDate(processedReleases);
-  
-  console.log(`Processed ${sortedReleases.length} release(s)\n`);
   
   return sortedReleases;
 };
