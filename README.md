@@ -34,7 +34,7 @@ Total: 7 release(s)
 ### 1. Install
 
 ```bash
-npm install -g @ghershko3/releaseradar
+npm i -g @ghershko/releaseradar
 ```
 
 ### 2. Setup GitHub CLI (if needed)
@@ -265,7 +265,7 @@ node tests/run-all.js  # run tests
 **Command not found: rr**
 
 ```bash
-npm install -g @ghershko3/releaseradar
+npm i -g @ghershko/releaseradar
 ```
 
 **GitHub CLI not installed**
