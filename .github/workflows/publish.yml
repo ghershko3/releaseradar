@@ -30,4 +30,4 @@ jobs:
         run: node tests/run-all.js
 
       - name: Publish to NPM
-        run: npm publish --provenance --access public
+        run: npm publish --access public
