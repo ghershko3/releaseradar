@@ -10,6 +10,8 @@ Stop clicking through GitHub's UI. Compare versions, search releases, and track 
 
 ```bash
 npm i -g @ghershko/releaseradar
+# or
+pnpm i -g @ghershko/releaseradar
 ```
 
 **Setup** (if not already installed)
@@ -101,6 +103,8 @@ rr --org company --repo backend releases v1.0
 
 ```bash
 npm i -g @ghershko/releaseradar
+# or
+pnpm i -g @ghershko/releaseradar
 ```
 
 **GitHub CLI missing**
