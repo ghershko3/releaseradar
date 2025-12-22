@@ -9,7 +9,10 @@
   },
   "preferGlobal": true,
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "version:patch": "npm version patch -m 'chore: bump version to %s [skip ci]'",
+    "version:minor": "npm version minor -m 'chore: bump version to %s [skip ci]'",
+    "version:major": "npm version major -m 'chore: bump version to %s [skip ci]'"
   },
   "keywords": [
     "github",
