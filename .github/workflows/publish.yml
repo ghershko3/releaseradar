@@ -36,32 +36,77 @@ jobs:
 
       - name: Bump version
         run: |
+          # region agent log
           CURRENT_VERSION=$(node -p "require('./package.json').version")
           PACKAGE_NAME=$(node -p "require('./package.json').name")
+          curl -X POST 'http://127.0.0.1:7243/ingest/0841ce9f-3042-470e-a465-5b96860b29f2' -H 'Content-Type: application/json' -d "{\"location\":\"bump-start\",\"message\":\"Workflow started\",\"data\":{\"currentVersion\":\"$CURRENT_VERSION\",\"packageName\":\"$PACKAGE_NAME\"},\"timestamp\":$(date +%s)000,\"sessionId\":\"debug-session\",\"runId\":\"run1\",\"hypothesisId\":\"H1\"}" 2>/dev/null || true
+          # endregion
+
+          # region agent log
+          if git rev-parse "v$CURRENT_VERSION" >/dev/null 2>&1; then
+            TAG_EXISTS="true"
+          else
+            TAG_EXISTS="false"
+          fi
+          if npm view "$PACKAGE_NAME@$CURRENT_VERSION" version 2>/dev/null; then
+            NPM_EXISTS="true"
+          else
+            NPM_EXISTS="false"
+          fi
+          curl -X POST 'http://127.0.0.1:7243/ingest/0841ce9f-3042-470e-a465-5b96860b29f2' -H 'Content-Type: application/json' -d "{\"location\":\"checks\",\"message\":\"Initial checks\",\"data\":{\"tagExists\":\"$TAG_EXISTS\",\"npmExists\":\"$NPM_EXISTS\"},\"timestamp\":$(date +%s)000,\"sessionId\":\"debug-session\",\"runId\":\"run1\",\"hypothesisId\":\"H2\"}" 2>/dev/null || true
+          # endregion
 
           if git rev-parse "v$CURRENT_VERSION" >/dev/null 2>&1; then
+            # region agent log
+            curl -X POST 'http://127.0.0.1:7243/ingest/0841ce9f-3042-470e-a465-5b96860b29f2' -H 'Content-Type: application/json' -d "{\"location\":\"branch1\",\"message\":\"Branch: tag exists\",\"data\":{\"action\":\"skip\"},\"timestamp\":$(date +%s)000,\"sessionId\":\"debug-session\",\"runId\":\"run1\",\"hypothesisId\":\"H3\"}" 2>/dev/null || true
+            # endregion
             echo "Tag v$CURRENT_VERSION already exists, skipping bump"
           elif npm view "$PACKAGE_NAME@$CURRENT_VERSION" version 2>/dev/null; then
+            # region agent log
+            curl -X POST 'http://127.0.0.1:7243/ingest/0841ce9f-3042-470e-a465-5b96860b29f2' -H 'Content-Type: application/json' -d "{\"location\":\"branch2\",\"message\":\"Branch: npm exists\",\"data\":{\"action\":\"calculate-next\"},\"timestamp\":$(date +%s)000,\"sessionId\":\"debug-session\",\"runId\":\"run1\",\"hypothesisId\":\"H4\"}" 2>/dev/null || true
+            # endregion
             NEXT_VERSION=$(node -p "
               const v = '$CURRENT_VERSION'.split('.');
               v[2] = parseInt(v[2]) + 1;
               v.join('.');
             ")
+            # region agent log
+            curl -X POST 'http://127.0.0.1:7243/ingest/0841ce9f-3042-470e-a465-5b96860b29f2' -H 'Content-Type: application/json' -d "{\"location\":\"next-calc\",\"message\":\"Calculated next version\",\"data\":{\"nextVersion\":\"$NEXT_VERSION\"},\"timestamp\":$(date +%s)000,\"sessionId\":\"debug-session\",\"runId\":\"run1\",\"hypothesisId\":\"H5\"}" 2>/dev/null || true
+            # endregion
             
             if git rev-parse "v$NEXT_VERSION" >/dev/null 2>&1; then
+              # region agent log
+              curl -X POST 'http://127.0.0.1:7243/ingest/0841ce9f-3042-470e-a465-5b96860b29f2' -H 'Content-Type: application/json' -d "{\"location\":\"branch2a\",\"message\":\"Branch: next tag exists\",\"data\":{\"action\":\"no-git-tag\"},\"timestamp\":$(date +%s)000,\"sessionId\":\"debug-session\",\"runId\":\"run1\",\"hypothesisId\":\"H6\"}" 2>/dev/null || true
+              # endregion
               echo "Next version v$NEXT_VERSION already tagged, updating package.json without creating tag"
               npm version $NEXT_VERSION --no-git-tag-version
             else
+              # region agent log
+              curl -X POST 'http://127.0.0.1:7243/ingest/0841ce9f-3042-470e-a465-5b96860b29f2' -H 'Content-Type: application/json' -d "{\"location\":\"branch2b\",\"message\":\"Branch: bump normally\",\"data\":{\"action\":\"npm-version-patch\"},\"timestamp\":$(date +%s)000,\"sessionId\":\"debug-session\",\"runId\":\"run1\",\"hypothesisId\":\"H7\"}" 2>/dev/null || true
+              # endregion
               echo "Version $CURRENT_VERSION already published, bumping to $NEXT_VERSION"
               npm version patch -m "chore: bump version to %s [skip ci]"
             fi
           else
+            # region agent log
+            curl -X POST 'http://127.0.0.1:7243/ingest/0841ce9f-3042-470e-a465-5b96860b29f2' -H 'Content-Type: application/json' -d "{\"location\":\"branch3\",\"message\":\"Branch: fresh bump\",\"data\":{\"action\":\"npm-version-patch\"},\"timestamp\":$(date +%s)000,\"sessionId\":\"debug-session\",\"runId\":\"run1\",\"hypothesisId\":\"H8\"}" 2>/dev/null || true
+            # endregion
             echo "Bumping new version"
             npm version patch -m "chore: bump version to %s [skip ci]"
           fi
+
+          # region agent log
+          FINAL_VERSION=$(node -p "require('./package.json').version")
+          curl -X POST 'http://127.0.0.1:7243/ingest/0841ce9f-3042-470e-a465-5b96860b29f2' -H 'Content-Type: application/json' -d "{\"location\":\"bump-end\",\"message\":\"After bump step\",\"data\":{\"finalVersion\":\"$FINAL_VERSION\"},\"timestamp\":$(date +%s)000,\"sessionId\":\"debug-session\",\"runId\":\"run1\",\"hypothesisId\":\"H9\"}" 2>/dev/null || true
+          # endregion
 
       - name: Push changes
         run: git push --follow-tags
 
       - name: Publish to NPM
-        run: npm publish --access public
+        run: |
+          # region agent log
+          PUBLISH_VERSION=$(node -p "require('./package.json').version")
+          curl -X POST 'http://127.0.0.1:7243/ingest/0841ce9f-3042-470e-a465-5b96860b29f2' -H 'Content-Type: application/json' -d "{\"location\":\"publish-start\",\"message\":\"About to publish\",\"data\":{\"publishVersion\":\"$PUBLISH_VERSION\"},\"timestamp\":$(date +%s)000,\"sessionId\":\"debug-session\",\"runId\":\"run1\",\"hypothesisId\":\"H10\"}" 2>/dev/null || true
+          # endregion
+          npm publish --access public
