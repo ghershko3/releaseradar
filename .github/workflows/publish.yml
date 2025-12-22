@@ -52,7 +52,7 @@ jobs:
       - name: Create git tag
         run: |
           VERSION=$(node -p "require('./package.json').version")
-          git tag -a "v$VERSION" -m "chore: release v$VERSION [skip ci]" || echo "Tag already exists, continuing..."
+          git tag -a "v$VERSION" -m "chore: release v$VERSION" || echo "Tag already exists, continuing..."
           git push --tags || echo "Tag already pushed, continuing..."
 
       - name: Publish to NPM
