@@ -12,6 +12,8 @@ Stop clicking through GitHub's UI. Compare versions, search releases, and track 
 npm i -g @ghershko/releaseradar
 # or
 pnpm i -g @ghershko/releaseradar
+# or
+yarn global add @ghershko/releaseradar
 ```
 
 **Setup** (if not already installed)
@@ -105,6 +107,8 @@ rr --org company --repo backend releases v1.0
 npm i -g @ghershko/releaseradar
 # or
 pnpm i -g @ghershko/releaseradar
+# or
+yarn global add @ghershko/releaseradar
 ```
 
 **GitHub CLI missing**
