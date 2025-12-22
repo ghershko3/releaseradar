@@ -37,8 +37,13 @@ jobs:
       - name: Bump version
         run: |
           CURRENT_VERSION=$(node -p "require('./package.json').version")
-          if git rev-parse "v$CURRENT_VERSION" >/dev/null 2>&1; then
-            echo "Version v$CURRENT_VERSION already tagged, skipping bump"
+          PACKAGE_NAME=$(node -p "require('./package.json').name")
+
+          if npm view "$PACKAGE_NAME@$CURRENT_VERSION" version 2>/dev/null; then
+            echo "Version $CURRENT_VERSION already published to npm, bumping to next version"
+            npm version patch -m "chore: bump version to %s [skip ci]"
+          elif git rev-parse "v$CURRENT_VERSION" >/dev/null 2>&1; then
+            echo "Version v$CURRENT_VERSION already tagged but not published, will publish existing version"
           else
             npm version patch -m "chore: bump version to %s [skip ci]"
           fi
