@@ -36,7 +36,12 @@ jobs:
 
       - name: Bump version
         run: |
-          npm version patch -m "chore: bump version to %s [skip ci]"
+          CURRENT_VERSION=$(node -p "require('./package.json').version")
+          if git rev-parse "v$CURRENT_VERSION" >/dev/null 2>&1; then
+            echo "Version v$CURRENT_VERSION already tagged, skipping bump"
+          else
+            npm version patch -m "chore: bump version to %s [skip ci]"
+          fi
 
       - name: Push changes
         run: git push --follow-tags
