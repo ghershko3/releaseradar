@@ -41,7 +41,7 @@ rr info v2.1.5             # Release details
 ## Commands
 
 ```bash
-rr releases <tag>          # Show releases since a specific tag
+rr releases <from> [to]    # Show releases since a tag, or between two tags
 rr list [prefix]           # List all releases (optional: filter by prefix)
 rr search <term>           # Search release notes
 rr info <tag>              # Get detailed release info
@@ -51,6 +51,7 @@ rr info <tag>              # Get detailed release info
 
 - `--org <name>` - Override GitHub organization
 - `--repo <name>` - Override repository name
+- `--last <N>m|h|d` - Filter `list` to releases in the last N minutes/hours/days (e.g. `24h`, `7d`)
 
 ## Features
 
@@ -68,10 +69,26 @@ v2.1.3       2025-12-19 14:15  charlie  DB connection pool
 Total: 3 release(s)
 ```
 
+**Version Range** - Compare between two specific versions (not up to latest)
+
+```bash
+$ rr releases v2.1.0 v2.1.5
+
+TAG          DATE             AUTHOR    CHANGES
+──────────────────────────────────────────────────
+v2.1.5       2025-12-20 09:23  alice    Rate limiting fix
+v2.1.4       2025-12-19 16:42  bob      Auth token refresh
+v2.1.3       2025-12-19 14:15  charlie  DB connection pool
+
+Total: 3 release(s)
+```
+
 **Monorepo Support** - Filter by service prefix
 
 ```bash
 rr list api                # only api-* releases
+rr list --last 24h         # releases from the last 24 hours
+rr list api --last 7d      # api-* releases from the last 7 days
 rr releases api-1.0.0      # compare API versions
 ```
 
