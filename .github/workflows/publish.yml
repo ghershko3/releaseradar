@@ -15,7 +15,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
+          ssh-key: ${{ secrets.SSH_DEPLOY_KEY }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -42,9 +42,10 @@ jobs:
           echo "Current version: $CURRENT_VERSION"
 
           if npm view "$PACKAGE_NAME@$CURRENT_VERSION" version 2>/dev/null; then
-            echo "Version $CURRENT_VERSION is already published to npm"
-            echo "Please bump the version locally using 'npm run version:patch' or 'npm run version:minor'"
-            exit 1
+            echo "Version $CURRENT_VERSION is already published to npm, bumping patch version..."
+            npm version patch -m "chore: bump version to %s [skip ci]"
+            git push
+            git push --tags
           else
             echo "Version $CURRENT_VERSION is not published yet, proceeding..."
           fi
