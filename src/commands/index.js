@@ -3,7 +3,7 @@ import { fetchAndProcessReleases, extractVersionPrefix } from '../services/relea
 import { formatRelease } from '../presentation/formatter.js';
 import { printTable, createReleasesTableHeader } from '../presentation/table.js';
 import { requireParameter, ValidationError, validateConfig } from '../utils/validation.js';
-import { isNewerThan } from '../utils/date-utils.js';
+import { isNewerThan, parseDuration, isWithinLast } from '../utils/date-utils.js';
 
 const findReleaseByVersion = (releases, version) => {
   return releases.find(release => release.tag === version);
@@ -19,6 +19,12 @@ const filterReleasesNewerThan = (releases, targetRelease) => {
   );
 };
 
+export const filterReleasesInRange = (releases, fromRelease, toRelease) =>
+  releases.filter(release =>
+    isNewerThan(release.published, fromRelease.published) &&
+    !isNewerThan(release.published, toRelease.published)
+  );
+
 const matchesSearchQuery = (release, query) => {
   const searchableText = [
     release.tag,
@@ -29,7 +35,7 @@ const matchesSearchQuery = (release, query) => {
   return searchableText.includes(query.toLowerCase());
 };
 
-export const commandReleases = (sinceVersion, config) => {
+export const commandReleases = (sinceVersion, config, toVersion) => {
   requireParameter(sinceVersion, 'releases');
   
   const releases = fetchAndProcessReleases(config);
@@ -52,10 +58,51 @@ export const commandReleases = (sinceVersion, config) => {
     console.log(chalk.dim(`\nTotal: ${releasesWithPrefix.length} release(s)`));
     return;
   }
+
+  if (toVersion) {
+    const toPrefix = extractVersionPrefix(toVersion);
+    if (toPrefix !== prefix) {
+      throw new ValidationError(
+        `Version prefixes must match: ${sinceVersion} (${prefix}) vs ${toVersion} (${toPrefix})`
+      );
+    }
+
+    const toRelease = findReleaseByVersion(releasesWithPrefix, toVersion);
+    if (!toRelease) {
+      console.log(chalk.yellow(`\nVersion ${toVersion} not found.`) + ` Showing all releases with prefix "${prefix}":\n`);
+      const tableConfig = createReleasesTableHeader();
+      printTable(tableConfig);
+      releasesWithPrefix.forEach(release =>
+        formatRelease(release, { showChanges: true })
+      );
+      console.log(chalk.dim(`\nTotal: ${releasesWithPrefix.length} release(s)`));
+      return;
+    }
+
+    if (!isNewerThan(toRelease.published, targetRelease.published)) {
+      throw new ValidationError('To version must be newer than from version');
+    }
+
+    const rangeReleases = filterReleasesInRange(releasesWithPrefix, targetRelease, toRelease);
+
+    console.log(`\nReleases from ${chalk.cyan(sinceVersion)} to ${chalk.cyan(toVersion)} ${chalk.dim(`(prefix: ${prefix}):`)}\n`);
+    const tableConfig = createReleasesTableHeader();
+    printTable(tableConfig);
+
+    if (rangeReleases.length === 0) {
+      console.log(chalk.dim('No releases found in range.'));
+    } else {
+      rangeReleases.forEach(release =>
+        formatRelease(release, { showChanges: true })
+      );
+      console.log(chalk.dim(`\nTotal: ${rangeReleases.length} release(s)`));
+    }
+    return;
+  }
   
   const newerReleases = filterReleasesNewerThan(releasesWithPrefix, targetRelease);
   
-  console.log(`\nReleases since ${chalk.cyan(sinceVersion)} ${chalk.dim(`(prefix: ${prefix}):`)}\\n`);
+  console.log(`\nReleases since ${chalk.cyan(sinceVersion)} ${chalk.dim(`(prefix: ${prefix}):`)}\n`);
   const tableConfig = createReleasesTableHeader();
   printTable(tableConfig);
   
@@ -107,13 +154,26 @@ export const commandSearch = (query, config) => {
 export const commandList = (prefix, config) => {
   const releases = fetchAndProcessReleases(config);
   
-  const filteredReleases = prefix 
+  let filteredReleases = prefix
     ? filterReleasesByPrefix(releases, prefix)
     : releases;
-  
-  const title = prefix 
-    ? `\nReleases with prefix "${prefix}":`
-    : '\nAll releases:';
+
+  if (config.last) {
+    const durationMs = parseDuration(config.last);
+    if (!durationMs) {
+      throw new ValidationError(
+        `Invalid --last value: ${config.last}. Use formats like 30m, 24h, 7d`
+      );
+    }
+    filteredReleases = filteredReleases.filter(release =>
+      isWithinLast(release.published, durationMs)
+    );
+  }
+
+  const lastSuffix = config.last ? ` (last ${config.last})` : '';
+  const title = prefix
+    ? `\nReleases with prefix "${prefix}"${lastSuffix}:`
+    : `\nAll releases${lastSuffix}:`;
   
   console.log(`${title}\n`);
   
@@ -139,14 +199,16 @@ QUICK START:
   rr list
 
 COMMANDS:
-  rr releases <tag>     Compare: What's new since this version?
-                        Example: rr releases app-25.12.100
+  rr releases <from> [to]  Compare: What's new since a version, or between two versions
+                           Example: rr releases app-25.12.100
+                           Example: rr releases app-25.12.100 app-25.12.105
 
   rr search "<query>"   Search: Find releases by keyword
                         Example: rr search "authentication fix"
 
   rr list [prefix]      Browse: All releases (optionally filtered)
                         Example: rr list api
+                        Example: rr list --last 24h
 
   rr info <tag>         Details: Full info about a release
                         Example: rr info app-25.12.107
@@ -160,6 +222,7 @@ CONFIGURATION:
   Override with flags:
     --org <name>       One-time org override
     --repo <name>      One-time repo override
+    --last <N>m|h|d    Filter list to releases in the last N minutes/hours/days
 
 EXAMPLES:
   # Setup once
@@ -167,6 +230,9 @@ EXAMPLES:
 
   # Find what changed since production
   rr releases api-2.1.0
+
+  # Compare between two deployed versions
+  rr releases api-2.1.0 api-2.1.5
 
   # Search for security patches
   rr search "CVE"

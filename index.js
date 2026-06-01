@@ -31,7 +31,8 @@ const resolveConfig = (configOverrides) => {
     process.exit(1);
   }
   
-  return validateConfig(merged);
+  const validated = validateConfig(merged);
+  return { ...validated, last: configOverrides.last };
 };
 
 const parseArguments = (args) => {
@@ -54,9 +55,11 @@ const parseArguments = (args) => {
   return {
     command: nonFlags[0],
     parameter: nonFlags[1],
+    parameter2: nonFlags[2],
     configOverrides: {
       org: getFlagValue('org'),
-      repo: getFlagValue('repo')
+      repo: getFlagValue('repo'),
+      last: getFlagValue('last')
     }
   };
 };
@@ -73,7 +76,7 @@ const COMMAND_HANDLERS = {
 
 const COMMANDS_NOT_REQUIRING_CONFIG = ['help', '--help', '-h'];
 
-const executeCommand = (command, parameter, config) => {
+const executeCommand = (command, parameter, parameter2, config) => {
   const handler = COMMAND_HANDLERS[command];
   
   if (!handler) {
@@ -84,7 +87,7 @@ const executeCommand = (command, parameter, config) => {
     checkGitHubCli();
   }
   
-  handler(parameter, config);
+  handler(parameter, config, parameter2);
 };
 
 const main = () => {
@@ -96,13 +99,13 @@ const main = () => {
       process.exit(0);
     }
     
-    const { command, parameter, configOverrides } = parseArguments(args);
+    const { command, parameter, parameter2, configOverrides } = parseArguments(args);
     
     if (COMMANDS_NOT_REQUIRING_CONFIG.includes(command)) {
-      executeCommand(command, parameter, null);
+      executeCommand(command, parameter, parameter2, null);
     } else {
       const config = resolveConfig(configOverrides);
-      executeCommand(command, parameter, config);
+      executeCommand(command, parameter, parameter2, config);
     }
     
   } catch (error) {
