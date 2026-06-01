@@ -25,6 +25,17 @@ export const filterReleasesInRange = (releases, fromRelease, toRelease) =>
     !isNewerThan(release.published, toRelease.published)
   );
 
+const filterReleasesByLast = (releases, last) => {
+  if (!last) return releases;
+  const durationMs = parseDuration(last);
+  if (!durationMs) {
+    throw new ValidationError(
+      `Invalid --last value: ${last}. Use formats like 30m, 24h, 7d`
+    );
+  }
+  return releases.filter(release => isWithinLast(release.published, durationMs));
+};
+
 const matchesSearchQuery = (release, query) => {
   const searchableText = [
     release.tag,
@@ -83,7 +94,10 @@ export const commandReleases = (sinceVersion, config, toVersion) => {
       throw new ValidationError('To version must be newer than from version');
     }
 
-    const rangeReleases = filterReleasesInRange(releasesWithPrefix, targetRelease, toRelease);
+    const rangeReleases = filterReleasesByLast(
+      filterReleasesInRange(releasesWithPrefix, targetRelease, toRelease),
+      config.last
+    );
 
     console.log(`\nReleases from ${chalk.cyan(sinceVersion)} to ${chalk.cyan(toVersion)} ${chalk.dim(`(prefix: ${prefix}):`)}\n`);
     const tableConfig = createReleasesTableHeader();
@@ -100,7 +114,10 @@ export const commandReleases = (sinceVersion, config, toVersion) => {
     return;
   }
   
-  const newerReleases = filterReleasesNewerThan(releasesWithPrefix, targetRelease);
+  const newerReleases = filterReleasesByLast(
+    filterReleasesNewerThan(releasesWithPrefix, targetRelease),
+    config.last
+  );
   
   console.log(`\nReleases since ${chalk.cyan(sinceVersion)} ${chalk.dim(`(prefix: ${prefix}):`)}\n`);
   const tableConfig = createReleasesTableHeader();
