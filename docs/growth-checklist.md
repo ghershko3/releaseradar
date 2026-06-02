@@ -2,9 +2,49 @@
 
 Manual steps to grow `releaseradar` usage after the unscoped rename.
 
+## Status
+
+| Step | Status |
+|------|--------|
+| Merge rename to main | Done (PR #4) |
+| GitHub repo topics | Done (`cli`, `github-releases`, `devtools`, `release-notes`, `nodejs`) |
+| README badges fixed | Done (GitHub release + license work now; npm badge turns green after publish) |
+| Publish `releaseradar` to npm | **Blocked** — see step 0 below |
+| Deprecate `@ghershko/releaseradar` | Waiting on publish |
+| awesome-cli-apps PR | [PR #1118](https://github.com/agarrharr/awesome-cli-apps/pull/1118) |
+| awesome-nodejs PR | Blocked — repo restricts PRs to prior contributors |
+| Pin repo on GitHub profile | Manual — do on your profile |
+| Record demo / launch post | Manual |
+
+## 0. Fix npm publish (required — badges stay red until this is done)
+
+CI publish failed because npm Trusted Publishing is configured for `@ghershko/releaseradar`, not the new unscoped name `releaseradar`.
+
+**Option A — manual first publish (fastest):**
+
+```bash
+npm login
+git clone https://github.com/ghershko3/releaseradar.git && cd releaseradar
+npm publish --access public
+```
+
+Then add a Trusted Publisher for `releaseradar` on npm (same GitHub repo/workflow) so future CI publishes work.
+
+**Option B — configure Trusted Publisher first:**
+
+1. Go to [npm Trusted Publishers](https://www.npmjs.com/settings/~your-username/publishers)
+2. Add publisher for package name `releaseradar`, repo `ghershko3/releaseradar`, workflow `publish.yml`
+3. Re-run the failed workflow: `gh workflow run "Publish to NPM" --repo ghershko3/releaseradar`
+
+After publish succeeds, verify:
+
+```bash
+npm view releaseradar version   # should show 1.0.17
+```
+
 ## 1. Deprecate the old scoped package (one-time, after first unscoped publish)
 
-Run once after `releaseradar@1.0.16` is live on npm:
+Run once after `releaseradar@1.0.17` is live on npm:
 
 ```bash
 npm deprecate @ghershko/releaseradar "Renamed to 'releaseradar' (unscoped). Run: npm i -g releaseradar"
@@ -19,54 +59,38 @@ npm view releaseradar version
 
 ## 2. GitHub repo topics
 
-Add these topics on https://github.com/ghershko3/releaseradar/settings:
+Done via `gh repo edit`. Topics: `cli`, `github-releases`, `devtools`, `release-notes`, `nodejs`.
 
-- `cli`
-- `github-releases`
-- `devtools`
-- `release-notes`
-- `nodejs`
+**Still manual:** Pin the repo on your GitHub profile (Profile → Customize → Pinned repositories).
 
-Pin the repo on your GitHub profile.
+## 3. Demo section
 
-## 3. Record and embed the demo
+README uses static terminal output (no broken asciinema placeholder). Optional upgrade:
 
-1. Record a terminal session:
-   ```bash
-   asciinema rec demo.cast
-   # run: rr list --last 7d, rr releases v2.1.0 v2.1.5, rr list api --last 24h
-   # exit with Ctrl+D
-   ```
-2. Upload: `asciinema upload demo.cast`
-3. Replace `PLACEHOLDER` in README.md Demo section with the asciinema ID.
-
-Alternative: record a GIF with `vhs` or `terminalizer` and save to `docs/demo.gif`.
+```bash
+brew install asciinema
+asciinema rec demo.cast
+# run: rr list --last 7d, rr releases v2.1.0 v2.1.5, rr list api --last 24h
+asciinema upload demo.cast
+```
 
 ## 4. Awesome list PRs
 
-### awesome-cli-apps
+### awesome-cli-apps — submitted
 
-Repo: https://github.com/agarrharr/awesome-cli-apps
+PR: https://github.com/agarrharr/awesome-cli-apps/pull/1118
 
-Suggested entry (under "Development" or "Git"):
+### awesome-nodejs — blocked
 
-```markdown
-- [releaseradar](https://github.com/ghershko3/releaseradar) - Compare, search, and diff GitHub releases from your terminal. Supports version ranges, monorepo prefixes, and time-window filtering.
-```
-
-PR title: `Add releaseradar - GitHub release comparison CLI`
-
-### awesome-nodejs
-
-Repo: https://github.com/sindresorhus/awesome-nodejs
+Repo restricts PRs to prior contributors. Options:
+- Open an issue requesting the entry be added
+- Become a prior contributor with a smaller accepted PR first
 
 Suggested entry (under "Command-line apps"):
 
 ```markdown
 - [releaseradar](https://github.com/ghershko3/releaseradar) - CLI to list, compare, search, and diff GitHub releases.
 ```
-
-PR title: `Add releaseradar CLI`
 
 ## 5. Launch post draft (dev.to / Show HN)
 
