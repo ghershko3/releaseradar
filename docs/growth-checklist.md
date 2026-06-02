@@ -1,71 +1,61 @@
 # Organic Growth Checklist
 
-Manual steps to grow `releaseradar` usage after the unscoped rename.
+Manual steps to grow `@ghershko/releaseradar` usage.
 
-## Status
+> **Note:** The unscoped rename to `releaseradar` was reverted to preserve the
+> existing download history on `@ghershko/releaseradar`. The package stays scoped.
 
-| Step | Status |
-|------|--------|
-| Merge rename to main | Done (PR #4) |
-| GitHub repo topics | Done (`cli`, `github-releases`, `devtools`, `release-notes`, `nodejs`) |
-| README badges fixed | Done (GitHub release + license work now; npm badge turns green after publish) |
-| Publish `releaseradar` to npm | **Blocked** — see step 0 below |
-| Deprecate `@ghershko/releaseradar` | Waiting on publish |
-| awesome-cli-apps PR | [PR #1118](https://github.com/agarrharr/awesome-cli-apps/pull/1118) |
-| awesome-nodejs PR | Blocked — repo restricts PRs to prior contributors |
-| Pin repo on GitHub profile | Manual — do on your profile |
-| Record demo / launch post | Manual |
+## Revert cleanup (manual — requires npm OTP in your terminal)
 
-## 0. Fix npm publish (required — badges stay red until this is done)
+These finish undoing the short-lived unscoped publish.
 
-CI publish failed because npm Trusted Publishing is configured for `@ghershko/releaseradar`, not the new unscoped name `releaseradar`.
+1. **Un-deprecate the scoped package** (it was deprecated during the rename):
 
-**Option A — manual first publish (fastest):**
+   ```bash
+   npm deprecate @ghershko/releaseradar ""
+   ```
 
-```bash
-npm login
-git clone https://github.com/ghershko3/releaseradar.git && cd releaseradar
-npm publish --access public
-```
+2. **Remove the unscoped package** that was published. It is brand new (published
+   today, ~0 downloads), so it can be unpublished within 72 hours:
 
-Then add a Trusted Publisher for `releaseradar` on npm (same GitHub repo/workflow) so future CI publishes work.
+   ```bash
+   npm unpublish releaseradar --force
+   ```
 
-**Option B — configure Trusted Publisher first:**
+   If the 72h window has passed, deprecate it instead:
 
-1. Go to [npm Trusted Publishers](https://www.npmjs.com/settings/~your-username/publishers)
-2. Add publisher for package name `releaseradar`, repo `ghershko3/releaseradar`, workflow `publish.yml`
-3. Re-run the failed workflow: `gh workflow run "Publish to NPM" --repo ghershko3/releaseradar`
+   ```bash
+   npm deprecate releaseradar "Use @ghershko/releaseradar instead."
+   ```
 
-After publish succeeds, verify:
+3. Verify:
 
-```bash
-npm view releaseradar version   # should show 1.0.17
-```
+   ```bash
+   npm view @ghershko/releaseradar version      # 1.0.18 after next publish
+   npm view @ghershko/releaseradar deprecated    # should be empty
+   ```
 
-## 1. Deprecate the old scoped package (one-time, after first unscoped publish)
+## CI publish
 
-Run once after `releaseradar@1.0.17` is live on npm:
+CI publishes via npm Trusted Publishing (OIDC). It was already working for
+`@ghershko/releaseradar` before the rename, so merging this revert to `main`
+should publish `@ghershko/releaseradar@1.0.18` automatically.
 
-```bash
-npm deprecate @ghershko/releaseradar "Renamed to 'releaseradar' (unscoped). Run: npm i -g releaseradar"
-```
+If CI fails on auth, confirm the Trusted Publisher on npmjs.com points to:
+- package `@ghershko/releaseradar`, repo `ghershko3/releaseradar`, workflow `publish.yml`
 
-Verify:
+## Off-repo growth (name-independent)
 
-```bash
-npm view @ghershko/releaseradar deprecated
-npm view releaseradar version
-```
+These all point at the GitHub repo, which is unchanged.
 
-## 2. GitHub repo topics
+- **GitHub repo topics** — done (`cli`, `github-releases`, `devtools`, `release-notes`, `nodejs`).
+- **Pin the repo** on your GitHub profile (Profile → Customize → Pinned repositories).
+- **awesome-cli-apps PR** — submitted: https://github.com/agarrharr/awesome-cli-apps/pull/1118
+- **awesome-nodejs** — blocked (repo restricts PRs to prior contributors). Open an issue or contribute elsewhere first.
 
-Done via `gh repo edit`. Topics: `cli`, `github-releases`, `devtools`, `release-notes`, `nodejs`.
+## Demo section
 
-**Still manual:** Pin the repo on your GitHub profile (Profile → Customize → Pinned repositories).
-
-## 3. Demo section
-
-README uses static terminal output (no broken asciinema placeholder). Optional upgrade:
+README uses static terminal output. Optional upgrade with asciinema:
 
 ```bash
 brew install asciinema
@@ -74,34 +64,16 @@ asciinema rec demo.cast
 asciinema upload demo.cast
 ```
 
-## 4. Awesome list PRs
-
-### awesome-cli-apps — submitted
-
-PR: https://github.com/agarrharr/awesome-cli-apps/pull/1118
-
-### awesome-nodejs — blocked
-
-Repo restricts PRs to prior contributors. Options:
-- Open an issue requesting the entry be added
-- Become a prior contributor with a smaller accepted PR first
-
-Suggested entry (under "Command-line apps"):
-
-```markdown
-- [releaseradar](https://github.com/ghershko3/releaseradar) - CLI to list, compare, search, and diff GitHub releases.
-```
-
-## 5. Launch post draft (dev.to / Show HN)
+## Launch post draft (dev.to / Show HN)
 
 **Title:** What shipped since Friday? Query GitHub releases from your terminal
 
-**Hook:** On-call engineers and release managers waste time clicking through GitHub's release UI. `releaseradar` (`rr`) gives you version diffs, monorepo filtering, and time windows in one command.
+**Hook:** On-call engineers and release managers waste time clicking through GitHub's release UI. `rr` gives you version diffs, monorepo filtering, and time windows in one command.
 
 **Body outline:**
 
 1. **The problem** — "What's deployed in prod vs what's in the latest release?" requires multiple GitHub clicks or scripting `gh release list`.
-2. **The solution** — `npm i -g releaseradar`, set `RR_ORG`/`RR_REPO`, run `rr`.
+2. **The solution** — `npm i -g @ghershko/releaseradar`, set `RR_ORG`/`RR_REPO`, run `rr`.
 3. **Demo commands:**
    ```bash
    rr list --last 7d                    # what shipped this week
@@ -109,16 +81,16 @@ Suggested entry (under "Command-line apps"):
    rr list api --last 24h               # monorepo: api service only
    rr search "CVE"                      # find security-related releases
    ```
-4. **Differentiators** — version-range diffing, monorepo prefix filter, real author detection (not CI bots), `--last` time windows.
+4. **Differentiators** — version-range diffing, monorepo prefix filter, `--last` time windows.
 5. **Requirements** — uses GitHub CLI (`gh`) you probably already have.
-6. **Links** — npm: https://www.npmjs.com/package/releaseradar, GitHub: https://github.com/ghershko3/releaseradar
+6. **Links** — npm: https://www.npmjs.com/package/@ghershko/releaseradar, GitHub: https://github.com/ghershko3/releaseradar
 
 **Show HN submission title:** Show HN: releaseradar – compare and diff GitHub releases from the terminal
 
 **Tags (dev.to):** `cli`, `github`, `devtools`, `opensource`, `node`
 
-## 6. Ongoing discovery
+## Ongoing discovery
 
 - Answer Stack Overflow / Reddit questions about comparing GitHub releases with a genuine answer + tool mention.
 - Search GitHub Issues in related repos (`release-please`, `semantic-release`) for pain points releaseradar solves.
-- Add a "Used by" or "Who uses this" section to README once you have adopters.
+- Add a "Used by" section to README once you have adopters.

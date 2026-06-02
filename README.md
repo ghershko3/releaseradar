@@ -1,9 +1,9 @@
 # releaseradar
 
 [![GitHub release](https://img.shields.io/github/v/release/ghershko3/releaseradar)](https://github.com/ghershko3/releaseradar/releases)
-[![npm version](https://img.shields.io/npm/v/releaseradar.svg)](https://www.npmjs.com/package/releaseradar)
+[![npm version](https://img.shields.io/npm/v/@ghershko/releaseradar.svg)](https://www.npmjs.com/package/@ghershko/releaseradar)
 [![license](https://img.shields.io/github/license/ghershko3/releaseradar.svg)](https://github.com/ghershko3/releaseradar/blob/main/LICENSE)
-[![node](https://img.shields.io/badge/node-%3E%3D14.0.0-brightgreen)](https://www.npmjs.com/package/releaseradar)
+[![node](https://img.shields.io/badge/node-%3E%3D14.0.0-brightgreen)](https://www.npmjs.com/package/@ghershko/releaseradar)
 
 > Built on `gh`. A faster way to answer "what shipped since the version in prod?"
 
@@ -46,11 +46,11 @@ Total: 3 release(s)
 **Install**
 
 ```bash
-npm i -g releaseradar
+npm i -g @ghershko/releaseradar
 # or
-pnpm i -g releaseradar
+pnpm i -g @ghershko/releaseradar
 # or
-yarn global add releaseradar
+yarn global add @ghershko/releaseradar
 ```
 
 > **Requirements:** [GitHub CLI](https://cli.github.com/) (`gh`) must be installed and authenticated. releaseradar uses `gh` under the hood — no separate GitHub token setup needed.
@@ -158,11 +158,11 @@ rr --org company --repo backend releases v1.0
 **Command not found**
 
 ```bash
-npm i -g releaseradar
+npm i -g @ghershko/releaseradar
 # or
-pnpm i -g releaseradar
+pnpm i -g @ghershko/releaseradar
 # or
-yarn global add releaseradar
+yarn global add @ghershko/releaseradar
 ```
 
 **GitHub CLI missing**
@@ -175,16 +175,6 @@ brew install gh && gh auth login
 
 - Verify: `rr --org myorg --repo myrepo list`
 - Increase limit: `export RR_LIMIT=500`
-
-## Migration from @ghershko/releaseradar
-
-The package was renamed from the scoped `@ghershko/releaseradar` to unscoped `releaseradar`. Install the new package:
-
-```bash
-npm i -g releaseradar
-```
-
-The `rr` command and all configuration (`RR_ORG`, `RR_REPO`, etc.) remain the same.
 
 ## License
 
