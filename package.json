@@ -1,7 +1,7 @@
 {
-  "name": "@ghershko/releaseradar",
+  "name": "releaseradar",
   "version": "1.0.17",
-  "description": "Lightning-fast CLI to query and compare GitHub releases from your terminal",
+  "description": "CLI to list, compare, search, and diff GitHub releases from your terminal",
   "main": "index.js",
   "type": "module",
   "bin": {
@@ -15,15 +15,14 @@
     "version:major": "npm version major -m 'chore: bump version to %s'"
   },
   "keywords": [
-    "github",
-    "releases",
-    "version",
-    "management",
-    "cli",
-    "git",
+    "github-releases",
+    "release-notes",
     "changelog",
+    "gh-cli",
+    "cli",
+    "devtools",
     "semver",
-    "radar"
+    "monorepo"
   ],
   "author": "Guy Hershko <ghershko3@gmail.com>",
   "license": "MIT",
