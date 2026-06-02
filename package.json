@@ -1,6 +1,6 @@
 {
-  "name": "releaseradar",
-  "version": "1.0.17",
+  "name": "@ghershko/releaseradar",
+  "version": "1.0.18",
   "description": "CLI to list, compare, search, and diff GitHub releases from your terminal",
   "main": "index.js",
   "type": "module",
