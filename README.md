@@ -5,16 +5,18 @@
 [![license](https://img.shields.io/github/license/ghershko3/releaseradar.svg)](https://github.com/ghershko3/releaseradar/blob/main/LICENSE)
 [![node](https://img.shields.io/badge/node-%3E%3D14.0.0-brightgreen)](https://www.npmjs.com/package/releaseradar)
 
-> Compare, search, and diff GitHub releases from your terminal.
+> Built on `gh`. A faster way to answer "what shipped since the version in prod?"
 
-Stop clicking through GitHub's UI. See what shipped between two versions, filter monorepo services by prefix, find releases from the last 24 hours, and get real authors — not CI bots.
+releaseradar wraps the GitHub CLI with opinionated shortcuts for teams that release often — especially monorepos with prefixed tags like `api-*` or `worker-*`. Set your org and repo once, then skip the flags and the date math.
 
-**Why releaseradar over `gh release list`?**
+**Common workflows**
 
-- **Version-range diffing** — `rr releases v2.1.0 v2.1.5` shows exactly what changed between two tags
-- **Monorepo prefix filtering** — `rr list api` for `api-*` releases only
-- **Time-window filtering** — `rr list --last 24h` for on-call "what shipped since Friday"
-- **Real author detection** — shows actual developers, not CI bots
+- `rr releases api-2.1.0` — everything released since prod for one service
+- `rr releases api-2.1.0 api-2.1.5` — diff between two deployed versions
+- `rr list api --last 7d` — this week's releases for one service
+- `rr search "CVE"` — find releases mentioning a keyword
+
+Set `RR_ORG` and `RR_REPO` once; no flags on every command.
 
 ## Demo
 
