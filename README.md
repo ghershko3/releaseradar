@@ -1,26 +1,61 @@
 # releaseradar
 
-> Query GitHub releases from your terminal. Fast, simple, powerful.
+[![GitHub release](https://img.shields.io/github/v/release/ghershko3/releaseradar)](https://github.com/ghershko3/releaseradar/releases)
+[![npm version](https://img.shields.io/npm/v/releaseradar.svg)](https://www.npmjs.com/package/releaseradar)
+[![license](https://img.shields.io/github/license/ghershko3/releaseradar.svg)](https://github.com/ghershko3/releaseradar/blob/main/LICENSE)
+[![node](https://img.shields.io/badge/node-%3E%3D14.0.0-brightgreen)](https://www.npmjs.com/package/releaseradar)
 
-Stop clicking through GitHub's UI. Compare versions, search releases, and track changes - all from the command line.
+> Compare, search, and diff GitHub releases from your terminal.
+
+Stop clicking through GitHub's UI. See what shipped between two versions, filter monorepo services by prefix, find releases from the last 24 hours, and get real authors — not CI bots.
+
+**Why releaseradar over `gh release list`?**
+
+- **Version-range diffing** — `rr releases v2.1.0 v2.1.5` shows exactly what changed between two tags
+- **Monorepo prefix filtering** — `rr list api` for `api-*` releases only
+- **Time-window filtering** — `rr list --last 24h` for on-call "what shipped since Friday"
+- **Real author detection** — shows actual developers, not CI bots
+
+## Demo
+
+```bash
+$ rr list --last 7d
+
+TAG          DATE             AUTHOR
+────────────────────────────────────────
+v2.1.5       2025-12-20 09:23  alice
+v2.1.4       2025-12-19 16:42  bob
+
+Total: 2 release(s)
+
+$ rr releases v2.1.0 v2.1.5
+
+TAG          DATE             AUTHOR    CHANGES
+──────────────────────────────────────────────────
+v2.1.5       2025-12-20 09:23  alice    Rate limiting fix
+v2.1.4       2025-12-19 16:42  bob      Auth token refresh
+v2.1.3       2025-12-19 14:15  charlie  DB connection pool
+
+Total: 3 release(s)
+```
 
 ## Quick Start
 
 **Install**
 
 ```bash
-npm i -g @ghershko/releaseradar
+npm i -g releaseradar
 # or
-pnpm i -g @ghershko/releaseradar
+pnpm i -g releaseradar
 # or
-yarn global add @ghershko/releaseradar
+yarn global add releaseradar
 ```
 
-**Setup** (if not already installed)
-
-```bash
-brew install gh && gh auth login
-```
+> **Requirements:** [GitHub CLI](https://cli.github.com/) (`gh`) must be installed and authenticated. releaseradar uses `gh` under the hood — no separate GitHub token setup needed.
+>
+> ```bash
+> brew install gh && gh auth login
+> ```
 
 **Configure** (add to `~/.zshrc` or `~/.bashrc`)
 
@@ -121,11 +156,11 @@ rr --org company --repo backend releases v1.0
 **Command not found**
 
 ```bash
-npm i -g @ghershko/releaseradar
+npm i -g releaseradar
 # or
-pnpm i -g @ghershko/releaseradar
+pnpm i -g releaseradar
 # or
-yarn global add @ghershko/releaseradar
+yarn global add releaseradar
 ```
 
 **GitHub CLI missing**
@@ -138,6 +173,16 @@ brew install gh && gh auth login
 
 - Verify: `rr --org myorg --repo myrepo list`
 - Increase limit: `export RR_LIMIT=500`
+
+## Migration from @ghershko/releaseradar
+
+The package was renamed from the scoped `@ghershko/releaseradar` to unscoped `releaseradar`. Install the new package:
+
+```bash
+npm i -g releaseradar
+```
+
+The `rr` command and all configuration (`RR_ORG`, `RR_REPO`, etc.) remain the same.
 
 ## License
 
